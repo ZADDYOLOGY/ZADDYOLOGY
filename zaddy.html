@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ZaddySphere - Ultimate Version</title>
+
+  <!-- Added meta viewport for mobile responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    /* ---------- Overall Styling ---------- */
+    html, body {
+      margin: 0;
+      background: #000;
+      font-family: "Helvetica Neue", Arial, sans-serif; /* from previous change */
+      font-size: 16px;
+      color: #fff;
+    }
+    /* Make all buttons bigger (font-size + padding) */
+    button {
+      font-size: 1.3em;    /* ~30% larger text */
+      padding: 0.78em;     /* ~30% larger tap area than the old 0.6em */
+    }
+
+    /* ---------- Welcome/Oath Page Overlay ---------- */
+    #welcomeOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.7);
+      z-index: 3000;
+      /* NEW: allow vertical scrolling if content is too tall */
+      overflow-y: auto;
+      /* optional padding for breathing room */
+      padding: 1em;  
+    }
+    /* Changed from fixed width to responsive + new max-height & overflow */
+    #welcomeBox {
+      background: #222;
+      border: 2px solid #555;
+      border-radius: 8px;
+      padding: 1.5em;
+      width: 90%;           /* responsive width */
+      max-width: 500px;     /* keep it from exploding on large screens */
+      text-align: center;
+      margin: 2em auto;     /* center it plus some vertical breathing room */
+      max-height: 90vh;     /* keep the box from exceeding screen height */
+      overflow-y: auto;     /* scroll inside the box if needed */
+    }
+
+    /* ---------- Weighted Category Choice Modal ---------- */
+    #weightChoiceOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: none; /* hidden until oath is accepted */
+      justify-content: center;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+    }
+    /* Changed from fixed width to responsive */
+    #weightChoiceBox {
+      background: #222;
+      border: 2px solid #555;
+      border-radius: 8px;
+      padding: 1.5em;
+      width: 90%; 
+      max-width: 500px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    #categoryOptions {
+      margin-top: 1em;
+      text-align: left;
+    }
+    .categoryOption {
+      margin-bottom: 1em;
+      line-height: 1.4em;
+      padding: 0.6em;
+      background: rgba(255,255,255,0.07);
+      border-radius: 5px;
+    }
+    #pickCategoryBtn {
+      margin-top: 1em;
+      width: 100%;
+      background: #555;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #pickCategoryBtn:hover {
+      background: #777;
+    }
+
+    /* ---------- Progress Bar at Bottom ---------- */
+    #bottomBar {
+      position: fixed;  
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(20,20,20,0.8);
+      display: flex;
+      align-items: center;
+      padding: 0 1em;
+      box-sizing: border-box;
+      z-index: 999;
+    }
+    #progressContainer {
+      flex: 1;
+      margin-right: 1em;
+      background: #333;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+    }
+    #progressBar {
+      background: #0f0;
+      width: 0;
+      height: 100%;
+      transition: width 0.3s;
+    }
+    #progressText {
+      margin-right: 2em;
+      white-space: nowrap;
+      font-weight: bold;
+    }
+
+    /* ---------- Name Fields (top corners) ---------- */
+    /* We'll hide them since we'll take the names from oath page */
+    #beholderContainer,
+    #appleContainer {
+      display: none;
+    }
+
+    /* ---------- Modal for Question Input ---------- */
+    #modalOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 5000;
+    }
+    #modalBox {
+      background: #222;
+      border: 2px solid #555;
+      border-radius: 8px;
+      padding: 1em;
+      width: 340px;
+    }
+    .sliderContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 1em 0;
+    }
+    .sliderLine {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+    .sliderLine label {
+      flex: 0 0 120px;
+      text-align: right;
+      padding-right: 8px;
+    }
+    .sliderLine input[type="range"] {
+      flex: 1;
+      margin: 0 8px;
+      -webkit-appearance: slider-horizontal;
+      accent-color: pink;
+    }
+    .sliderLine .valueDisplay {
+      width: 30px;
+      text-align: center;
+      margin-left: 8px;
+      font-weight: bold;
+    }
+    .minMaxMarks {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 0.75em;
+      color: #aaa;
+      margin-top: -4px;
+      padding: 0 6px;
+    }
+    #modalButtons {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1em;
+    }
+    #modalButtons button {
+      margin-left: 1em;
+      background: #555;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #modalButtons button:hover {
+      background: #777;
+    }
+
+    /* ---------- Bonus Modal ---------- */
+    #bonusModalOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 5000;
+    }
+    #bonusModalBox {
+      background: #222;
+      border: 2px solid #555;
+      border-radius: 8px;
+      padding: 1em;
+      width: 400px;
+    }
+    #bonusModalBox textarea {
+      width: 100%;
+      height: 100px;
+      resize: none;
+      margin-bottom: 1em;
+      padding: 5px;
+      font-family: inherit;
+      font-size: 1em;
+    }
+
+    /* ---------- CSS2D Labels ---------- */
+    .label {
+      font-size: 16px;
+      background: rgba(50,50,50,0.7);
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      transition: none; /* No lag */
+      font-weight: bold;
+    }
+
+    /* ---------- Final Results Overlay ---------- */
+    #finalResultOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background: rgba(0,0,0,0.9);
+      z-index: 2000;
+      color: #fff;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    /* Slight tweak for mobile but keep same styling for desktop */
+    #finalResultBox {
+      background: #222;
+      border: 2px solid #fff;
+      border-radius: 8px;
+      padding: 20px;
+      width: 90%;           /* so it doesn't overflow on tiny screens */
+      max-width: 600px;
+      text-align: center;
+      margin: 0 auto;
+    }
+    #finalScore {
+      font-size: 2.5em;
+      color: #0f0;
+      font-weight: bold;
+    }
+
+    /* ---------- Confetti Canvas ---------- */
+    #confettiCanvas {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 3000;
+    }
+    /* ---------- Bottom-Right Label ---------- */
+    #zaddyRights {
+      position: fixed;
+      bottom: 4px;
+      right: 10px;
+      color: #ccc;
+      font-size: 0.8em;
+      z-index: 9999;
+    }
+
+    /* Tick mark datalists for 5 or 10 values */
+    datalist option {
+      color: pink;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- NEW WELCOME PAGE with Oath -->
+  <div id="welcomeOverlay">
+    <div id="welcomeBox">
+      <h2>Welcome to Zaddyology</h2>
+      <p style="font-size:0.9em;">
+        Before proceeding, please enter both names and swear upon the Zaddyological Oath:
+      </p>
+      <div id="welcomeNames">
+        <div class="nameRow">
+          <label>Your Name:</label>
+          <input id="welcomeBeholder" type="text" placeholder="Eye of the Beholder" />
+        </div>
+        <div class="nameRow">
+          <label>Target Name:</label>
+          <input id="welcomeApple" type="text" placeholder="Apple of Your Eye" />
+        </div>
+      </div>
+      <div id="oathContainer">
+        <p>
+          "I, [Name], the eye of the beholder, solemnly swear upon the principles of Zaddyology 
+          to uphold truth, fairness, and unwavering consistency in all matters of judgment 
+          upon the apples of my eye.
+        </p>
+        <p>
+          I vow to judge with clarity, to remain true to my own desires, and to never waver 
+          in my standards, no matter the temptation.
+        </p>
+        <p>
+          I swear to honor the essence of erection, to recognize both the tangible and the intangible, 
+          and to never deceive myself or others in my assessments.
+        </p>
+        <p>
+          Above all, I pledge to be true to myself, for only through authenticity can the 
+          rankings hold meaning in my own life.
+        </p>
+        <p>
+          So it is spoken, so it shall be ranked. And sail free to new London."
+        </p>
+      </div>
+      <button id="swearOathBtn" style="
+        margin-top: 1em;
+        width: 100%;
+        background: #555;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+      ">
+        Swear by Zaddyological Oath?
+      </button>
+    </div>
+  </div>
+
+  <!-- Weighted Category Choice Modal -->
+  <div id="weightChoiceOverlay">
+    <div id="weightChoiceBox">
+      <h2>Pick Your Weighted Category</h2>
+      <p style="font-size:0.9em;">
+        Each section normally accounts for 20% of the final rating except one special category, 
+        which gets 40%. Select the category you want to weigh more heavily:
+      </p>
+      <div id="categoryOptions">
+        <div class="categoryOption">
+          <input type="radio" name="weightedCat" value="Erector Scale" id="optErector" checked />
+          <label for="optErector" id="labelErector">Erector Scale (40%)</label>
+          <br /><em style="color:#999;">Physical: Face, boobs, butt, overall attractiveness</em>
+        </div>
+        <div class="categoryOption">
+          <input type="radio" name="weightedCat" value="Emotionality" id="optEmotion" />
+          <label for="optEmotion" id="labelEmotion">Emotionality (20%)</label>
+          <br /><em style="color:#999;">Annoyance Factor, stability, intelligence, humor</em>
+        </div>
+        <div class="categoryOption">
+          <input type="radio" name="weightedCat" value="Necessities" id="optNecess" />
+          <label for="optNecess" id="labelNecess">Necessities (20%)</label>
+          <br /><em style="color:#999;">Style, voice, homies, red flags</em>
+        </div>
+        <div class="categoryOption">
+          <input type="radio" name="weightedCat" value="Wife Material" id="optWife" />
+          <label for="optWife" id="labelWife">Wife Material (20%)</label>
+          <br /><em style="color:#999;">Loyalty, nurturing, family, respect for grind</em>
+        </div>
+      </div>
+      <button id="pickCategoryBtn">Confirm & Start</button>
+    </div>
+  </div>
+
+  <!-- Bottom Bar & Progress -->
+  <div id="bottomBar">
+    <div id="progressText">Questions: 0 / 16 answered</div>
+    <div id="progressContainer">
+      <div id="progressBar"></div>
+    </div>
+  </div>
+
+  <!-- Name Fields (Hidden) -->
+  <div id="beholderContainer">
+    <label>Eye of the Beholder:
+      <input id="beholderInput" type="text" placeholder="Your name..." />
+    </label>
+  </div>
+  <div id="appleContainer">
+    <label>Apple of My Eye:
+      <input id="appleInput" type="text" placeholder="Their name..." />
+    </label>
+  </div>
+
+  <!-- Tick marks for sliders (5 and 10) with visible labels/numbers -->
+  <datalist id="ticks5">
+    <option value="1" label="1"></option>
+    <option value="2" label="2"></option>
+    <option value="3" label="3"></option>
+    <option value="4" label="4"></option>
+    <option value="5" label="5"></option>
+  </datalist>
+  <datalist id="ticks10">
+    <option value="1" label="1"></option>
+    <option value="2" label="2"></option>
+    <option value="3" label="3"></option>
+    <option value="4" label="4"></option>
+    <option value="5" label="5"></option>
+    <option value="6" label="6"></option>
+    <option value="7" label="7"></option>
+    <option value="8" label="8"></option>
+    <option value="9" label="9"></option>
+    <option value="10" label="10"></option>
+  </datalist>
+
+  <!-- Modal for Question Input -->
+  <div id="modalOverlay">
+    <div id="modalBox">
+      <h2 id="modalTitle">Question</h2>
+      <div class="sliderContainer">
+        <div class="sliderLine">
+          <label id="questionName"></label>
+          <input type="range" id="questionSlider" min="1" value="1" />
+          <span class="valueDisplay" id="questionValue">1</span>
+        </div>
+        <div class="minMaxMarks" id="minMaxMarks">
+          <span>1</span><span>10</span>
+        </div>
+      </div>
+      <div id="modalButtons">
+        <button id="cancelBtn">Cancel</button>
+        <button id="saveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bonus Modal -->
+  <div id="bonusModalOverlay">
+    <div id="bonusModalBox">
+      <h2>Bonus Points</h2>
+      <p style="font-size:0.9em;">Enter your personal reasoning for an extra 0.5 points (optional):</p>
+      <textarea id="bonusText"></textarea>
+      <div id="bonusModalButtons">
+        <button id="cancelBonusBtn">Cancel</button>
+        <button id="submitBonusBtn">Submit Bonus</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Results Overlay -->
+  <div id="finalResultOverlay"></div>
+
+  <!-- Bottom-Right Label -->
+  <div id="zaddyRights">All rights reserved: Zaddy Incorporated</div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Three.js & Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/examples/js/renderers/CSS2DRenderer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/examples/js/loaders/FontLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/examples/js/geometries/TextGeometry.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <script>
+    /* The rest of your entire logic remains the same,
+       plus an orientationchange listener for extra safety. */
+
+    // Grabbing the oath overlay items
+    const welcomeOverlay = document.getElementById('welcomeOverlay');
+    const swearOathBtn   = document.getElementById('swearOathBtn');
+    const welcomeBeholder = document.getElementById('welcomeBeholder');
+    const welcomeApple    = document.getElementById('welcomeApple');
+
+    // Our hidden fields that the final code references
+    const beholderInput = document.getElementById('beholderInput');
+    const appleInput    = document.getElementById('appleInput');
+
+    swearOathBtn.addEventListener('click', () => {
+      let bVal = welcomeBeholder.value.trim();
+      let aVal = welcomeApple.value.trim();
+      if(!bVal || !aVal){
+        alert("Please enter both names before proceeding.");
+        return;
+      }
+      // Transfer to hidden fields so final results can pick them up
+      beholderInput.value = bVal;
+      appleInput.value    = aVal;
+
+      // Hide oath overlay, show Weighted Category overlay
+      welcomeOverlay.style.display = 'none';
+      document.getElementById('weightChoiceOverlay').style.display = 'flex';
+    });
+
+    /***********************************************
+     * Your existing script below (unchanged)
+     ***********************************************/
+
+    let categories = [];
+    let wedgeAngles = [];
+    let totalQuestions = 0;
+    let weightedCategoryName = "";
+    let bonusAsked = false;
+    let bonusCompleted = false;
+    let bonusPoints = 0;
+    let bonusText = "";
+
+    const baseCategoryData = {
+      "Erector Scale": {
+        name: "Erector Scale", color: 0xff0055,
+        questions_10: [
+          { name: "Face Card", max: 10, value: null },
+          { name: "Boob Preference", max: 10, value: null },
+          { name: "Ass Preference", max: 10, value: null },
+          { name: "Overall Attractiveness", max: 10, value: null }
+        ],
+        questions_5: [
+          { name: "Face Card", max: 5, value: null },
+          { name: "Boob Preference", max: 5, value: null },
+          { name: "Ass Preference", max: 5, value: null },
+          { name: "Overall Attractiveness", max: 5, value: null }
+        ]
+      },
+      "Emotionality": {
+        name: "Emotionality", color: 0x0099ff,
+        questions_10: [
+          { name: "Annoyance Factor", max: 10, value: null },
+          { name: "Emotional Stability", max: 10, value: null },
+          { name: "Intelligence", max: 10, value: null },
+          { name: "Humor", max: 10, value: null }
+        ],
+        questions_5: [
+          { name: "Annoyance Factor", max: 5, value: null },
+          { name: "Emotional Stability", max: 5, value: null },
+          { name: "Intelligence", max: 5, value: null },
+          { name: "Humor", max: 5, value: null }
+        ]
+      },
+      "Necessities": {
+        name: "Necessities", color: 0x00ff88,
+        questions_10: [
+          { name: "Style", max: 10, value: null },
+          { name: "Voice", max: 10, value: null },
+          { name: "Homies", max: 10, value: null },
+          { name: "Red Flags", max: 10, value: null }
+        ],
+        questions_5: [
+          { name: "Style", max: 5, value: null },
+          { name: "Voice", max: 5, value: null },
+          { name: "Homies", max: 5, value: null },
+          { name: "Red Flags", max: 5, value: null }
+        ]
+      },
+      "Wife Material": {
+        name: "Wife Material", color: 0xffcc00,
+        questions_10: [
+          { name: "Loyalty", max: 10, value: null },
+          { name: "Nurturing", max: 10, value: null },
+          { name: "Family", max: 10, value: null },
+          { name: "Respect for Grind", max: 10, value: null }
+        ],
+        questions_5: [
+          { name: "Loyalty", max: 5, value: null },
+          { name: "Nurturing", max: 5, value: null },
+          { name: "Family", max: 5, value: null },
+          { name: "Respect for Grind", max: 5, value: null }
+        ]
+      }
+    };
+
+    // Weighted category dynamic labels
+    const labelErector = document.getElementById('labelErector');
+    const labelEmotion = document.getElementById('labelEmotion');
+    const labelNecess = document.getElementById('labelNecess');
+    const labelWife   = document.getElementById('labelWife');
+    const radioEls = [
+      { el: document.getElementById('optErector'), labelEl: labelErector },
+      { el: document.getElementById('optEmotion'), labelEl: labelEmotion },
+      { el: document.getElementById('optNecess'),  labelEl: labelNecess },
+      { el: document.getElementById('optWife'),    labelEl: labelWife }
+    ];
+    radioEls.forEach(r => {
+      r.el.addEventListener('change', () => {
+        if (r.el.checked) {
+          radioEls.forEach(rr => {
+            if (rr.el.value === r.el.value) {
+              rr.labelEl.textContent = `${rr.el.value} (40%)`;
+            } else {
+              rr.labelEl.textContent = `${rr.el.value} (20%)`;
+            }
+          });
+        }
+      });
+    });
+
+    const pickCategoryBtn = document.getElementById('pickCategoryBtn');
+    const weightChoiceOverlay = document.getElementById('weightChoiceOverlay');
+    pickCategoryBtn.addEventListener('click', () => {
+      const chosen = document.querySelector('input[name="weightedCat"]:checked');
+      if (!chosen) return;
+      weightedCategoryName = chosen.value;
+
+      categories = [];
+      wedgeAngles = [];
+
+      // Weighted => questions_10, others => questions_5
+      Object.keys(baseCategoryData).forEach(catKey => {
+        const baseCat = baseCategoryData[catKey];
+        if (catKey === weightedCategoryName) {
+          wedgeAngles.push(Math.PI * 0.8);
+          categories.push({
+            name: baseCat.name,
+            color: baseCat.color,
+            questions: JSON.parse(JSON.stringify(baseCat.questions_10))
+          });
+        } else {
+          wedgeAngles.push(Math.PI * 0.4);
+          categories.push({
+            name: baseCat.name,
+            color: baseCat.color,
+            questions: JSON.parse(JSON.stringify(baseCat.questions_5))
+          });
+        }
+      });
+
+      totalQuestions = categories.reduce((s, cat) => s + cat.questions.length, 0);
+      weightChoiceOverlay.style.display = 'none';
+      initZaddySphere();
+    });
+
+    let scene, camera, renderer, labelRenderer, controls;
+    let wedgeGroup, wedgeGroupWireframe, textGroup, zaddyTextMesh;
+    let starMaterial;
+    let spikeData = [];
+    let bonusGroup, bonusSphere;
+    let blowUpActive = false;
+    let blowUpStartTime = null;
+    let myConfetti;
+    const finalResultOverlay = document.getElementById('finalResultOverlay');
+
+    function initZaddySphere() {
+      initScene();
+      buildSphere();
+      buildZaddyText();
+      buildStars();
+      buildBonusSphere();
+      initRaycaster();
+      myConfetti = confetti.create(document.getElementById('confettiCanvas'), { resize: true, useWorker: true });
+      animate();
+      updateProgress();
+    }
+
+    function initScene() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 0, 40);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+      dirLight.position.set(0, 20, 20);
+      scene.add(dirLight);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+      scene.add(ambientLight);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+      labelRenderer = new THREE.CSS2DRenderer();
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.domElement.style.position = 'absolute';
+      labelRenderer.domElement.style.top = '0';
+      labelRenderer.domElement.style.pointerEvents = 'none';
+      document.body.appendChild(labelRenderer.domElement);
+
+      window.addEventListener('resize', onWindowResize, false);
+
+      // Added orientation change listener for mobile
+      window.addEventListener('orientationchange', onWindowResize, false);
+    }
+
+    function buildSphere() {
+      wedgeGroup = new THREE.Group();
+      scene.add(wedgeGroup);
+      wedgeGroupWireframe = new THREE.Group();
+      wedgeGroup.add(wedgeGroupWireframe);
+
+      let phiStart = 0;
+      const sphereRadius = 8;
+      const spikeOuterRadius = sphereRadius + 3;
+
+      for (let i = 0; i < categories.length; i++) {
+        const cat = categories[i];
+        const phiLength = wedgeAngles[i];
+        const wedgeGeom = new THREE.SphereGeometry(sphereRadius, 32, 32, phiStart, phiLength);
+        const wedgeMat = new THREE.MeshStandardMaterial({
+          color: cat.color,
+          transparent: true,
+          opacity: 0.65,
+          metalness: 0.2,
+          roughness: 0.2,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+        const wedgeMesh = new THREE.Mesh(wedgeGeom, wedgeMat);
+        wedgeMesh.raycast = () => {}; // not clickable
+        wedgeGroup.add(wedgeMesh);
+
+        const wireframeMat = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.2, transparent: true });
+        wedgeGroupWireframe.add(new THREE.LineSegments(wedgeGeom, wireframeMat));
+
+        // Category label
+        const catLabelEl = document.createElement('div');
+        catLabelEl.className = 'label';
+        catLabelEl.textContent = cat.name;
+        const catLabelObj = new THREE.CSS2DObject(catLabelEl);
+        const midPhi = phiStart + phiLength / 2;
+        const labelTheta = 1.0;
+        const lx = sphereRadius * Math.sin(labelTheta) * Math.cos(midPhi);
+        const ly = sphereRadius * Math.cos(labelTheta);
+        const lz = sphereRadius * Math.sin(labelTheta) * Math.sin(midPhi);
+        catLabelObj.position.set(lx, ly, lz);
+        wedgeGroup.add(catLabelObj);
+
+        // Build spikes (one per question)
+        const stepTheta = Math.PI / (cat.questions.length + 1);
+        cat.questions.forEach((q, qIndex) => {
+          const spikeTheta = stepTheta * (qIndex + 1);
+          // Spikes are 10% bigger
+          const coneGeom = new THREE.ConeGeometry(1.1, 3.3, 16);
+          coneGeom.rotateX(Math.PI * 0.5);
+
+          const spikeMat = new THREE.MeshStandardMaterial({
+            color: cat.color,
+            emissive: cat.color,
+            emissiveIntensity: 0.4
+          });
+          const spikeMesh = new THREE.Mesh(coneGeom, spikeMat);
+
+          const sx = spikeOuterRadius * Math.sin(spikeTheta) * Math.cos(midPhi);
+          const sy = spikeOuterRadius * Math.cos(spikeTheta);
+          const sz = spikeOuterRadius * Math.sin(spikeTheta) * Math.sin(midPhi);
+          spikeMesh.position.set(sx, sy, sz);
+
+          const outward = spikeMesh.position.clone().multiplyScalar(2);
+          spikeMesh.lookAt(outward);
+          wedgeGroup.add(spikeMesh);
+
+          // Spike label
+          const spikeLabelEl = document.createElement('div');
+          spikeLabelEl.className = 'label';
+          spikeLabelEl.textContent = q.name;
+          const spikeLabelObj = new THREE.CSS2DObject(spikeLabelEl);
+          spikeLabelObj.position.set(0, 0, 2.0);
+          spikeMesh.add(spikeLabelObj);
+
+          // Save spike data for interaction
+          spikeData.push({
+            categoryIndex: i,
+            questionIndex: qIndex,
+            mesh: spikeMesh,
+            labelObj: spikeLabelObj
+          });
+        });
+
+        phiStart += phiLength;
+      }
+    }
+
+    function buildZaddyText(){
+      textGroup = new THREE.Group();
+      scene.add(textGroup);
+
+      const loader = new THREE.FontLoader();
+      loader.load('https://cdn.jsdelivr.net/npm/three@0.136.0/examples/fonts/helvetiker_regular.typeface.json', font => {
+        const textGeo = new THREE.TextGeometry('ZADDYOLOGY', {
+          font: font,
+          size: 2,
+          height: 0.3,
+          curveSegments: 12
+        });
+        textGeo.center();
+        const textMat = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          metalness: 0.5,
+          roughness: 0.2,
+          emissive: 0xffffff,
+          emissiveIntensity: 0.2
+        });
+        zaddyTextMesh = new THREE.Mesh(textGeo, textMat);
+        zaddyTextMesh.position.set(0, 14, 0);
+        textGroup.add(zaddyTextMesh);
+      });
+    }
+
+    let starCount = 400;
+    function buildStars(){
+      const starGeometry = new THREE.BufferGeometry();
+      const starPositions = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++){
+        const r = 200;
+        starPositions[i*3]   = (Math.random() - 0.5) * 2 * r;
+        starPositions[i*3+1] = (Math.random() - 0.5) * 2 * r;
+        starPositions[i*3+2] = (Math.random() - 0.5) * 2 * r;
+      }
+      starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+      starMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 1,
+        sizeAttenuation: true,
+        transparent: true
+      });
+      const starPoints = new THREE.Points(starGeometry, starMaterial);
+      scene.add(starPoints);
+    }
+
+    function buildBonusSphere(){
+      const bonusGroup = new THREE.Group();
+      scene.add(bonusGroup);
+
+      const bonusGeom = new THREE.SphereGeometry(1.5, 32, 32);
+      const bonusMat = new THREE.MeshStandardMaterial({
+        color: 0xFFD700,
+        emissive: 0xFFD700,
+        emissiveIntensity: 0.5
+      });
+      bonusSphere = new THREE.Mesh(bonusGeom, bonusMat);
+      bonusSphere.position.set(15, 0, 0);
+      bonusGroup.add(bonusSphere);
+
+      const bonusLabelEl = document.createElement('div');
+      bonusLabelEl.className = 'label';
+      bonusLabelEl.textContent = "Bonus";
+      const bonusLabelObj = new THREE.CSS2DObject(bonusLabelEl);
+      bonusLabelObj.position.set(0, 2, 0);
+      bonusSphere.add(bonusLabelObj);
+
+      window._bonusGroup = bonusGroup;
+    }
+
+    let raycaster, mouse;
+    function initRaycaster(){
+      raycaster = new THREE.Raycaster();
+      mouse = new THREE.Vector2();
+      // We can still use pointer events for desktop, but typically 'click' helps on mobile
+      renderer.domElement.addEventListener('pointermove', onPointerMove, false);
+      renderer.domElement.addEventListener('pointerdown', onPointerDown, false);
+    }
+    function onPointerDown(e){
+      e.preventDefault();
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      // Check spikes
+      const spikeIntersects = raycaster.intersectObjects(spikeData.map(d => d.mesh), true);
+      if (spikeIntersects.length > 0){
+        const clickedObj = spikeIntersects[0].object;
+        const spikeInfo = spikeData.find(d => d.mesh === clickedObj);
+        if (spikeInfo) {
+          openQuestionModal(spikeInfo);
+          return;
+        }
+      }
+
+      // Check bonus sphere
+      const sphereIntersects = raycaster.intersectObject(bonusSphere, true);
+      if (sphereIntersects.length > 0){
+        if (!bonusCompleted) {
+          bonusAsked = true;
+          openBonusModal();
+        } else {
+          alert("You've already submitted your bonus reasoning!");
+        }
+      }
+    }
+    function onPointerMove(e){
+      e.preventDefault();
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      const objects = spikeData.map(d => d.mesh).concat([bonusSphere]);
+      const intersects = raycaster.intersectObjects(objects, true);
+      document.body.style.cursor = (intersects.length > 0) ? 'pointer' : 'default';
+    }
+
+    /***********************************************
+     * BONUS MODAL
+     ***********************************************/
+    const bonusModalOverlay = document.getElementById('bonusModalOverlay');
+    const bonusTextEl = document.getElementById('bonusText');
+    document.getElementById('cancelBonusBtn').addEventListener('click', () => {
+      bonusModalOverlay.style.display = "none";
+      if (getAnsweredCount() === totalQuestions && !bonusCompleted) {
+        showFinalResults();
+      }
+    });
+    document.getElementById('submitBonusBtn').addEventListener('click', () => {
+      let text = bonusTextEl.value.trim();
+      if (text !== ""){
+        bonusCompleted = true; 
+        bonusText = text; 
+        bonusPoints = 0.5;
+      } else {
+        bonusCompleted = false; 
+        bonusPoints = 0;
+      }
+      bonusModalOverlay.style.display = "none";
+      if (getAnsweredCount() === totalQuestions) {
+        showFinalResults();
+      }
+    });
+    function openBonusModal(){
+      bonusModalOverlay.style.display = "flex";
+    }
+
+    /***********************************************
+     * QUESTION MODAL
+     ***********************************************/
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const questionNameElModal = document.getElementById('questionName');
+    const questionSlider = document.getElementById('questionSlider');
+    const questionValueEl = document.getElementById('questionValue');
+    const minMaxMarksEl = document.getElementById('minMaxMarks');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveBtn   = document.getElementById('saveBtn');
+
+    questionSlider.addEventListener('input', () => {
+      questionValueEl.textContent = questionSlider.value;
+    });
+
+    let currentSpikeInfo = null;
+    function openQuestionModal(spikeInfo){
+      currentSpikeInfo = spikeInfo;
+      const cat = categories[spikeInfo.categoryIndex];
+      const q   = cat.questions[spikeInfo.questionIndex];
+
+      modalTitle.textContent = cat.name;
+      let displayName = q.name;
+      if (q.name === "Annoyance Factor") {
+        displayName += " (less = more annoying!)";
+      } else if (q.name === "Red Flags") {
+        displayName += " (less = more red flags!)";
+      }
+      questionNameElModal.textContent = displayName;
+
+      questionSlider.setAttribute('list', (q.max === 5) ? 'ticks5' : 'ticks10');
+      questionSlider.max = q.max;
+      minMaxMarksEl.children[0].textContent = '1';
+      minMaxMarksEl.children[1].textContent = String(q.max);
+
+      let startVal = (q.value !== null) ? q.value : 1;
+      questionSlider.value = startVal;
+      questionValueEl.textContent = questionSlider.value;
+
+      modalOverlay.style.display = 'flex';
+    }
+
+    cancelBtn.addEventListener('click', () => {
+      modalOverlay.style.display = 'none';
+      currentSpikeInfo = null;
+    });
+
+    saveBtn.addEventListener('click', () => {
+      if (currentSpikeInfo){
+        const cat = categories[currentSpikeInfo.categoryIndex];
+        const q   = cat.questions[currentSpikeInfo.questionIndex];
+        let newVal = parseInt(questionSlider.value, 10);
+        newVal = Math.min(newVal, q.max); 
+        newVal = Math.max(1, newVal);
+        q.value = newVal;
+
+        // visually mark the spike as answered
+        currentSpikeInfo.mesh.material.color.set(0x888888);
+        currentSpikeInfo.mesh.material.emissive.set(0x888888);
+        currentSpikeInfo.labelObj.element.style.transform = 'scale(0.8)';
+      }
+      modalOverlay.style.display = 'none';
+      currentSpikeInfo = null;
+
+      updateProgress();
+      if (getAnsweredCount() === totalQuestions) {
+        if (!bonusAsked && !bonusCompleted) {
+          bonusAsked = true;
+          let wantBonus = confirm("All questions answered. Want to answer the bonus for +0.5?");
+          if (wantBonus){
+            openBonusModal();
+            return;
+          } else {
+            showFinalResults();
+            return;
+          }
+        } else if (!bonusCompleted) {
+          let wantBonus = confirm("All questions answered. Last chance for bonus. Do it?");
+          if (wantBonus){
+            openBonusModal();
+          } else {
+            showFinalResults();
+          }
+        } else {
+          showFinalResults();
+        }
+      }
+    });
+
+    function getAnsweredCount() {
+      let count = 0;
+      categories.forEach(cat => {
+        cat.questions.forEach(q => {
+          if (q.value !== null) count++;
+        });
+      });
+      return count;
+    }
+    function updateProgress(){
+      const answered = getAnsweredCount();
+      document.getElementById('progressText').textContent = `Questions: ${answered} / ${totalQuestions} answered`;
+      let pct = (answered / totalQuestions) * 100;
+      document.getElementById('progressBar').style.width = pct + '%';
+    }
+
+    /***********************************************
+     * FINAL RESULTS
+     ***********************************************/
+    function showFinalResults(){
+      let sumAll = 0;
+      let breakdownHTML = "";
+      categories.forEach(cat => {
+        cat.questions.forEach(q => {
+          sumAll += (q.value || 0);
+          breakdownHTML += `<li><strong>${cat.name} - ${q.name}:</strong> ${q.value || 0}</li>`;
+        });
+      });
+      let finalScore = (sumAll / 100) * 10;
+      if (bonusCompleted) {
+        finalScore += 0.5;
+      }
+      if (finalScore > 10.5) {
+        finalScore = 10.5;
+      }
+
+      const outOfTen = finalScore.toFixed(1);
+      // Pull from hidden fields (populated after oath step)
+      const beholderName = document.getElementById('beholderInput').value || "Unknown";
+      const appleName = document.getElementById('appleInput').value || "Unknown";
+      let bonusIndicator = bonusCompleted ? "(+ Bonus)" : "";
+      let bonusHTML = bonusCompleted ? `<p><strong>Bonus Reasoning:</strong> ${bonusText}</p>` : "";
+
+      finalResultOverlay.innerHTML = `
+        <div id="finalResultBox">
+          <h2>Your Zaddy Score</h2>
+          <div id="finalScore">${outOfTen} / 10 <span style="font-size:0.6em;">${bonusIndicator}</span></div>
+          <p><strong>Eye of the Beholder:</strong> ${beholderName}</p>
+          <p><strong>Apple of My Eye:</strong> ${appleName}</p>
+          ${bonusHTML}
+          <h3>Breakdown</h3>
+          <ul>${breakdownHTML}</ul>
+          <button id="closeResultsBtn">Close</button>
+        </div>
+      `;
+      finalResultOverlay.style.display = 'flex';
+      document.getElementById('closeResultsBtn').addEventListener('click', () => {
+        finalResultOverlay.style.display = 'none';
+      });
+      launchConfetti();
+      blowUpSphere();
+    }
+
+    /***********************************************
+     * Confetti & Blow-up Effects
+     ***********************************************/
+    function launchConfetti(){
+      myConfetti({ particleCount: 20, angle: 60, spread: 100, origin: { x: 0 } });
+      myConfetti({ particleCount: 20, angle: 120, spread: 100, origin: { x: 1 } });
+      const duration = 3000;
+      const end = Date.now() + duration;
+      (function frame(){
+        myConfetti({ particleCount: 20, angle: 60,  spread: 100, origin: { x: 0 } });
+        myConfetti({ particleCount: 20, angle: 120, spread: 100, origin: { x: 1 } });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+    }
+    function blowUpSphere(){
+      blowUpActive = true;
+      blowUpStartTime = performance.now();
+    }
+
+    function onWindowResize(){
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    const clock = new THREE.Clock();
+    function animate(){
+      requestAnimationFrame(animate);
+
+      if (wedgeGroup){
+        wedgeGroup.rotation.y += 0.0024;  // ~20% slower rotation
+        wedgeGroup.rotation.x += 0.0008;
+      }
+      if (zaddyTextMesh){
+        textGroup.rotation.y += 0.015;
+      }
+      window._bonusGroup && (window._bonusGroup.rotation.y += 0.005);
+
+      if (starMaterial){
+        const elapsed = clock.getElapsedTime();
+        starMaterial.size = 1 + 0.3 * Math.sin(elapsed * 2);
+      }
+      if (blowUpActive && wedgeGroup){
+        const t = (performance.now() - blowUpStartTime) / 1000;
+        let scale = 1 + t * 2;
+        if (scale >= 3) scale = 3;
+        wedgeGroup.scale.set(scale, scale, scale);
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
