@@ -12,25 +12,64 @@
       font-family: sans-serif;
       text-align: center;
       margin-top: 50px;
+      /* So we can absolutely position stars in the body */
+      position: relative;
+      overflow: hidden; /* optional: keeps stars from causing scrollbars */
     }
-    /* Make buttons (the <a> tags) bigger */
-    a {
+
+    /* Twinkling star style */
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle 1.5s infinite ease-in-out;
+      opacity: 0.7;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.1; }
+      50%      { opacity: 1;   }
+    }
+
+    /* 3D spinning text */
+    #zaddySpinning {
+      font-size: 2.5em;
+      font-weight: bold;
+      margin-bottom: 20px; /* space between spinning text and heading */
+      display: inline-block; /* ensures the transform rotates the element itself */
+      animation: spin 4s linear infinite;
+      transform-style: preserve-3d;
+    }
+    @keyframes spin {
+      0% { transform: rotateY(0deg); }
+      100% { transform: rotateY(360deg); }
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    /* Container for the buttons, giving them extra vertical spacing */
+    .buttons {
+      margin-top: 40px; /* push the buttons down a bit */
+    }
+    .buttons a {
       display: inline-block;
-      font-size: 1.4em;       /* bigger text */
-      padding: 1em 1.5em;    /* more space around text */
+      font-size: 1.4em;
+      padding: 1em 1.5em;
       background: #222;
       color: #fff;
       text-decoration: none;
       border-radius: 8px;
-      margin: 0 1em;
+      margin: 10px 1em; /* add some vertical/horizontal separation */
     }
-    a:hover {
+    .buttons a:hover {
       background: #444;
     }
 
-    /* Optional: you can add a media query to scale up further on very small screens */
     @media (max-width: 600px) {
-      a {
+      .buttons a {
         font-size: 1.6em;
         padding: 1.2em 2em;
       }
@@ -38,11 +77,31 @@
   </style>
 </head>
 <body>
-  <h1>Welcome!</h1>
+  <!-- 3D spinning ZADDYOLOGY text -->
+  <div id="zaddySpinning">ZADDYOLOGY</div>
 
-  <!-- Link to the separate pages -->
-  <a href="zaddy.html">Zaddyology if you a dude</a>
-  <a href="baddie.html">Baddiology if you aren't</a>
+  <!-- Main heading -->
+  <h1>Welcome Inside</h1>
 
+  <!-- Button container (vertical spacing) -->
+  <div class="buttons">
+    <a href="zaddy.html">Zaddyology if you a dude</a>
+    <a href="baddie.html">Baddiology if you aren't</a>
+  </div>
+
+  <!-- Script to generate random "stars" on screen -->
+  <script>
+    // How many stars you'd like
+    const STAR_COUNT = 60;
+
+    for (let i = 0; i < STAR_COUNT; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      // Position them randomly in the viewport
+      star.style.top = Math.random() * 100 + 'vh';
+      star.style.left = Math.random() * 100 + 'vw';
+      document.body.appendChild(star);
+    }
+  </script>
 </body>
 </html>
